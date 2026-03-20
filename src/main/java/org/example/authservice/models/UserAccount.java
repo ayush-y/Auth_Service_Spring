@@ -9,7 +9,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Users extends BaseModel{
+public class UserAccount extends BaseModel{
 
     @Column(nullable = false)
     private String name;

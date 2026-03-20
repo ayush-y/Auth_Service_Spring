@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserSignUpRequestDto {
+public class UserSignupRequestDto {
 
    private String name;
 
