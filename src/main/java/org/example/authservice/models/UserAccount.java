@@ -2,6 +2,7 @@ package org.example.authservice.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.*;
 @Entity
 @Getter
@@ -9,6 +10,7 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "users")
 public class UserAccount extends BaseModel{
 
     @Column(nullable = false)

@@ -18,11 +18,15 @@ public abstract class BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long Id;
 
-    @Column(nullable = false)
-    @CreatedDate // this annotation tells spring that only handle it for object creation
-    private LocalDateTime createdAt;
+//    @Column(nullable = false)
+//    @CreatedDate // this annotation tells spring that only handle it for object creation
+//    private LocalDateTime createdAt;
 
     @Column(nullable = false)
     @LastModifiedDate // this annotation tells spring that only handle it for object creation
-    protected LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;
+
+    @CreatedDate
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
 }
