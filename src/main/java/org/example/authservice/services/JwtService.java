@@ -1,5 +1,6 @@
 package org.example.authservice.services;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -9,9 +10,11 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 @Service
 public class JwtService implements CommandLineRunner {
@@ -27,22 +30,61 @@ public class JwtService implements CommandLineRunner {
      *
      * @return
      */
-    private String createToken(Map<String, Object> payload, String username){
+    private String createToken(Map<String, Object> payload, String email){
 
         Date now = new Date();
         Date expiryDate = new Date(now.getTime()+expiry*1000L);
-        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
 
         return Jwts.builder()
                 .claims(payload)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(expiryDate)
-                .subject(username)
-                .signWith(key)
+                .subject(email)
+                .signWith(getSignKey())
                 .compact();
 
     }
 
+    private Claims extractAllPayloads(String token) {
+        return Jwts.parser()
+                .setSigningKey(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+    private Key getSignKey(){
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
+        return key;
+    }
+    public <T> T extractClaim (String token, Function<Claims, T> claimsResolver){
+        final Claims claims = extractAllPayloads(token);
+        return claimsResolver.apply(claims);
+    }
+    private Date extractExpiration(String token){
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    /**
+     * This method checks if the token expiry was before the current time stamp or not?
+     * @param token jwt token
+     * @return true if token is expired
+     */
+    private boolean isTokenExpired(String token){
+        return extractExpiration(token).before(new Date());
+    }
+    private String extractEmail(String token){
+        return extractClaim(token, Claims::getSubject);
+    }
+    private boolean validateToken(String token, String email){
+        final String userEmailFetchedFromToken= extractEmail(token);
+        return (userEmailFetchedFromToken.equals(email)) && !isTokenExpired(token);
+    }
+    //custom method for extraction payload
+
+    private Object extractPayload(String token, String payloadKey){
+        Claims claims = extractAllPayloads(token);
+        return (Object) claims.get(payloadKey);
+    }
 
     @Override
     public void run(String... args) throws Exception {
@@ -52,5 +94,6 @@ public class JwtService implements CommandLineRunner {
         mp.put("phoneNumber", "9999999");
         String result = createToken(mp, "Ayush");
         System.out.println("Generated JWT Token is :" +result);
+        System.out.println(extractPayload(result, "phoneNumber").toString());
     }
 }
