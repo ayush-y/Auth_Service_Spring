@@ -4,28 +4,35 @@ import org.example.authservice.models.UserAccount;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
-public class AuthUserDetails extends UserAccount implements UserDetails {
+public class AuthUserDetails implements UserDetails {
 
-    //why this class
-    // Because spring security works on UserDetail polymorphic type of auth
-    private String username;
+    private final UserAccount user;
 
-    private String password;
-
-    public AuthUserDetails(UserAccount userAccount){
-        this.username = userAccount.getEmail();
-        this.password = userAccount.getPassword();
+    public AuthUserDetails(UserAccount user) {
+        this.user = user;
     }
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
-    //Below set of method does not concern much
+
     @Override
     public String getUsername() {
-        return this.username;
+        return user.getEmail();
+    }
+
+    @Override
+    public String getPassword() {
+        return user.getPassword();
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
     }
 
     @Override
@@ -35,16 +42,11 @@ public class AuthUserDetails extends UserAccount implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return false;
+        return true;
     }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return false;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return new ArrayList<>();
     }
 }
