@@ -1,5 +1,7 @@
 package org.example.authservice.controllers;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.authservice.dto.AuthRequestDto;
 import org.example.authservice.dto.AuthResponseDto;
@@ -31,21 +33,26 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
 
-    public AuthController(AuthService authService, AuthenticationManager authenticationManager, JwtService jwtService){
+    public AuthController(AuthService authService, AuthenticationManager authenticationManager, JwtService jwtService) {
         this.authService = authService;
         this.authenticationManager = authenticationManager;
-         this.jwtService = jwtService;
+        this.jwtService = jwtService;
     }
-    @PostMapping("/signup/user")
-    public ResponseEntity<UserResponseDto> signUp(@RequestBody UserSignupRequestDto userSignUpRequestDto){
 
+    @PostMapping("/signup/user")
+    public ResponseEntity<UserResponseDto> signUp(@RequestBody UserSignupRequestDto userSignUpRequestDto) {
+        System.out.println("Request received in signup ");
         UserResponseDto userResponseDto = authService.signupUser(userSignUpRequestDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }
 
     @PostMapping("/signing/user")
-    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletResponse response){
+    public ResponseEntity<?> signIn(@RequestBody AuthRequestDto authRequestDto, HttpServletResponse response) {
         try {
+
+//            System.out.println("EMAIL RECEIVED: [" + authRequestDto.getEmail() + "]");
+//            System.out.println("PASSWORD RECEIVED: [" + authRequestDto.getPassword() + "]");
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             authRequestDto.getEmail(),
@@ -54,15 +61,15 @@ public class AuthController {
             );
 
             Map<String, Object> payload = new HashMap<>();
-            payload.put("email" , authRequestDto.getEmail());
+            payload.put("email", authRequestDto.getEmail());
             String jwtToken = jwtService.createToken(authRequestDto.getEmail());
 
-            ResponseCookie cookie = ResponseCookie.from("jwtToken", jwtToken)
-                            .httpOnly(true)
-                            .secure(false)
-                            .path("/")
-                            .maxAge(cookieExpiry)
-                            .build();
+            ResponseCookie cookie = ResponseCookie.from("JwtToken", jwtToken)
+                    .httpOnly(false)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(cookieExpiry)
+                    .build();
 
             response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
             return ResponseEntity.ok(AuthResponseDto.builder().success(true).build());
@@ -72,7 +79,16 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authentication failed");
         }
+
     }
+    @GetMapping("/validate/user")
+    public ResponseEntity<?> validate(HttpServletRequest request){
+        System.out.println("validation ");
+        for(Cookie cookie : request.getCookies()){
+            System.out.println(cookie.getName() + " " + cookie.getValue());
+        }
+        return new ResponseEntity<>("success", HttpStatus.OK);
 
-
+    }
 }
+
