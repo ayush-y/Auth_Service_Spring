@@ -50,14 +50,13 @@ public class JwtService {
 
     public Claims extractAllPayloads(String token) {
         return Jwts.parser()
-                .setSigningKey(getSignKey())
+                .verifyWith((SecretKey) getSignKey())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();
     }
-    public Key getSignKey(){
-        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
-        return key;
+    public SecretKey getSignKey() {
+        return Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
     }
     public <T> T extractClaim (String token, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllPayloads(token);

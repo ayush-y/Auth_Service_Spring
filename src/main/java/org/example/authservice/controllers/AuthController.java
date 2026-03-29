@@ -41,7 +41,6 @@ public class AuthController {
 
     @PostMapping("/signup/user")
     public ResponseEntity<UserResponseDto> signUp(@RequestBody UserSignupRequestDto userSignUpRequestDto) {
-        System.out.println("Request received in signup ");
         UserResponseDto userResponseDto = authService.signupUser(userSignUpRequestDto);
         return new ResponseEntity<>(userResponseDto, HttpStatus.CREATED);
     }
@@ -82,13 +81,9 @@ public class AuthController {
 
     }
     @GetMapping("/validate/user")
-    public ResponseEntity<?> validate(HttpServletRequest request){
-        System.out.println("validation ");
-        for(Cookie cookie : request.getCookies()){
-            System.out.println(cookie.getName() + " " + cookie.getValue());
+        public ResponseEntity<?> validate(HttpServletRequest request) {
+            return new ResponseEntity<>("success", HttpStatus.OK);
         }
-        return new ResponseEntity<>("success", HttpStatus.OK);
-
     }
-}
+
 
